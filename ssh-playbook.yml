@@ -1,0 +1,32 @@
+---
+- name: create an ssh key
+  hosts: server
+  remote_user: ubuntu
+  become: yes
+
+  tasks:
+  - name: generate SSH key
+    openssh_keypair:
+      path: "~/.ssh/id_rsa"
+      type: rsa
+      size: 4096
+      state: present
+      force: no
+
+
+- name: create user
+  hosts: webservers
+  remote_user: ubuntu
+  become: yes
+ 
+  tasks:
+  - name: Add users
+    user:
+      name: chagit
+      password: opsschool
+
+  - name: add authorized key
+    authorized_key:
+      user: chagit
+      state: present
+      key: "{{  lookup('file', lookup('env','HOME') + '/.ssh/id_rsa.pub')}}"
