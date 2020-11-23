@@ -1,0 +1,67 @@
+---
+
+- name: 'install docker dependencies'
+  apt:
+    name: '{{ item }}'
+    state: 'present'
+  with_items:
+    - 'apt-transport-https'
+    - 'ca-certificates'
+
+
+- name: 'add docker repo apt key'
+  apt_key:
+    url: https://download.docker.com/linux/ubuntu/gpg
+    state: 'present'
+  register: 'add_repository_key'
+  ignore_errors: true
+
+
+- name: 'add Docker repository'
+  apt_repository:
+    repo: '{{ docker_apt_repository }}'
+    state: 'present'
+    update_cache: 'yes'
+
+
+- name: install docker
+  apt:
+    name: 'docker-ce={{ docker_version }}'
+    state: 'present'
+
+
+- name: 'enable docker systemd service'
+  service:
+    name: 'docker'
+    state: 'started'
+    enabled: 'yes'
+
+
+- name: 'prepare default daemon configuration'
+  copy:
+    src: 'daemon.json'
+    dest: '/etc/docker/daemon.json'
+
+
+- name: 'set periodic docker system prune'
+  cron:
+    name: 'docker-prune'
+    minute: '0'
+    hour: '*/2'
+    job: 'docker container prune -f'
+
+
+- name: 'add users to docker group'
+  user:
+    name: '{{ item }}'
+    groups: 'docker'
+    append: 'yes'
+  with_items: '{{ docker_group_members }}'
+  when: 'docker_group_members is defined'
+
+- name: Create nginx container
+  docker_container:
+    name: "{{ container_name }}"
+    image: "{{ container_image }}"
+    ports: '{{ nginx_published_ports }}'
+    exposed_ports: '{{ nginx_exposed_ports }}'

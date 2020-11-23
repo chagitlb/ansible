@@ -1,0 +1,24 @@
+---
+# The specific version that we aim at installing.
+docker_version: 
+
+# The release channel to look for packages.
+docker_apt_release_channel: 'stable'
+
+# The URL of the apt repository.
+docker_apt_repository: 'deb https://download.docker.com/linux/{{ ansible_distribution|lower }} {{ ansible_distribution_release }} {{ docker_apt_release_channel }}'
+
+# List of users that we want to add to the
+# `docker` group.
+docker_group_members: 
+  - 'ubuntu'
+
+create_containers: 1
+container_name: nginx
+container_image: nginx
+nginx_exposed_ports:
+  - '80'
+
+nginx_published_ports:
+  - '80:80'
+

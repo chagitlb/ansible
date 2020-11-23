@@ -1,0 +1,6 @@
+
+- hosts: 'webservers'
+  become: true
+  any_errors_fatal: true
+  roles:
+    - 'docker'
